@@ -1,0 +1,35 @@
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.env
+.venv
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+
+# Session files
+sessions/
+logs/
+data/
+
+# Replit specific files
+.replit
+.config/
+.breakpoints
+.cache/
+.upm/
+.pythonlibs/
+
+# Node.js
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Special files
+.DS_Store
+Thumbs.db
+*.log
