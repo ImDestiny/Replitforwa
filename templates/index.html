@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en" data-bs-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Telegram Forwarder Bot</title>
+    <link rel="stylesheet" href="https://cdn.replit.com/agent/bootstrap-agent-dark-theme.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/custom.css') }}">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+</head>
+<body>
+    <div class="container py-5">
+        <div class="row justify-content-center">
+            <div class="col-md-8">
+                <div class="card bg-dark">
+                    <div class="card-header card-header-telegram text-center">
+                        <h3><i class="bi bi-telegram"></i> Telegram Forwarder Bot</h3>
+                    </div>
+                    <div class="card-body">
+                        {% with messages = get_flashed_messages(with_categories=true) %}
+                        {% if messages %}
+                        {% for category, message in messages %}
+                        <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+                            {{ message }}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+                        {% endfor %}
+                        {% endif %}
+                        {% endwith %}
+
+                        <div class="text-center mb-4">
+                            <p class="lead">Forward messages from source channels to destination channels with resume capability</p>
+                        </div>
+
+                        <div class="features mb-4">
+                            <h4>Features:</h4>
+                            <ul>
+                                <li>Forward messages from source channels/groups to destination channels/groups</li>
+                                <li>Support for restricted channels and groups</li>
+                                <li>Resume forwarding if interrupted</li>
+                                <li>Forward from a specific message onwards</li>
+                                <li>Cancel forwarding process at any time</li>
+                            </ul>
+                        </div>
+
+                        <div class="text-center mt-4">
+                            <a href="{{ url_for('login') }}" class="btn btn-telegram btn-lg">
+                                <i class="bi bi-telegram"></i> Login with Telegram
+                            </a>
+                        </div>
+                    </div>
+                    <div class="card-footer text-center text-muted">
+                        <small>Use this bot at your own risk. Excessive use may lead to account limitations.</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

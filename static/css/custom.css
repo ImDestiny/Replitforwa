@@ -1,0 +1,98 @@
+/* Custom CSS for the Telegram Forwarder Bot */
+
+/* Progress bar customization */
+.progress {
+    height: 20px;
+    margin-bottom: 10px;
+    background-color: #2c2c2c;
+}
+
+.progress-bar {
+    background-color: #0088cc;
+}
+
+/* Telegram-themed colors */
+.btn-telegram {
+    background-color: #0088cc;
+    border-color: #0088cc;
+    color: white;
+}
+
+.btn-telegram:hover, .btn-telegram:focus {
+    background-color: #0077b3;
+    border-color: #0077b3;
+    color: white;
+}
+
+.card-header-telegram {
+    background-color: #0088cc;
+    color: white;
+}
+
+/* Custom animation for loading spinner */
+@keyframes telegram-spinner {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+.telegram-spinner {
+    display: inline-block;
+    width: 1.5rem;
+    height: 1.5rem;
+    border: 0.25em solid rgba(0, 136, 204, 0.2);
+    border-right-color: #0088cc;
+    border-radius: 50%;
+    animation: telegram-spinner 1s linear infinite;
+}
+
+/* Custom styles for chat lists */
+.chat-list {
+    max-height: 400px;
+    overflow-y: auto;
+}
+
+.chat-item {
+    position: relative;
+    padding: 10px 15px;
+    border-bottom: 1px solid #333;
+    transition: background-color 0.2s ease;
+}
+
+.chat-item:hover {
+    background-color: #2c2c2c;
+}
+
+.chat-item .title {
+    font-weight: bold;
+    margin-bottom: 5px;
+}
+
+.chat-item .link {
+    font-size: 0.8rem;
+    color: #6c757d;
+}
+
+/* Status indicators */
+.status-indicator {
+    display: inline-block;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    margin-right: 5px;
+}
+
+.status-running {
+    background-color: #28a745;
+}
+
+.status-completed {
+    background-color: #0088cc;
+}
+
+.status-failed {
+    background-color: #dc3545;
+}
+
+.status-cancelled {
+    background-color: #ffc107;
+}
