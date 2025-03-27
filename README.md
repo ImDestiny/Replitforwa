@@ -15,7 +15,7 @@ A sophisticated Telegram message forwarding bot with advanced channel management
 ## Requirements
 
 - Python 3.11+
-- PostgreSQL database
+- MongoDB database
 - Telegram API credentials (API ID and API Hash)
 - Telegram Bot Token
 
@@ -27,12 +27,8 @@ The following environment variables need to be set:
 API_ID=your_telegram_api_id
 API_HASH=your_telegram_api_hash
 TELEGRAM_BOT_TOKEN=your_telegram_bot_token
-DATABASE_URL=your_postgresql_database_url
-PGHOST=your_database_host
-PGPORT=your_database_port
-PGUSER=your_database_user
-PGPASSWORD=your_database_password
-PGDATABASE=your_database_name
+DATABASE_URI=your_mongodb_database_url
+DATABASE_NAME=your_mongodb_database_name
 BOT_OWNER_ID=your_telegram_id (optional)
 FORCE_SUB_CHANNEL=your_channel_username (optional)
 FORCE_SUB_ON=TRUE/FALSE (optional)
@@ -61,7 +57,7 @@ This bot can be deployed on various platforms. Detailed instructions for each pl
 1. Fork this repository to your GitHub account
 2. Create a new app on Heroku
 3. Connect to your GitHub repository
-4. Add the Heroku Postgres add-on
+4. Add a MongoDB database (use MongoDB Atlas or another provider)
 5. Set all required environment variables
 6. Deploy the application
 
@@ -69,7 +65,7 @@ This bot can be deployed on various platforms. Detailed instructions for each pl
 1. Fork this repository to your GitHub account
 2. Create a new project on Railway
 3. Connect to your GitHub repository
-4. Add a PostgreSQL database
+4. Add a MongoDB database (use MongoDB Atlas or another provider)
 5. Set all required environment variables
 6. Deploy the application
 
