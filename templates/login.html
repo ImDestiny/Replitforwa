@@ -9,20 +9,20 @@
         body {
             padding-top: 2rem;
         }
+        .login-form {
+            max-width: 500px;
+            margin: 0 auto;
+        }
         .logo {
             max-width: 80px;
             margin-bottom: 1rem;
-        }
-        .login-container {
-            max-width: 500px;
-            margin: 0 auto;
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <div class="login-container">
-            <div class="text-center mb-4">
+        <div class="row justify-content-center mb-4">
+            <div class="col-md-8 text-center">
                 <svg class="logo" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 240" width="80" height="80">
                     <defs>
                         <linearGradient id="a" x1=".667" x2=".417" y1=".167" y2=".75">
@@ -39,57 +39,66 @@
                     <path fill="#a9c9dd" d="M98 175c3 0 4.325-1.372 6-3l16-15.558-19.958-12.035"/>
                     <path fill="url(#b)" d="M100.04 144.41l48.36 35.729c5.519 3.045 9.501 1.468 10.876-5.123l19.685-92.763c2.015-8.08-3.08-11.746-8.36-9.349l-115.59 44.571c-7.89 3.165-7.843 7.567-1.438 9.528l29.663 9.259 68.673-43.325c3.242-1.966 6.218-.91 3.776 1.258"/>
                 </svg>
-                <h2>Login with Telegram API</h2>
-                <p>Enter your Telegram API credentials to use the forwarding bot</p>
+                <h1>Login with Telegram</h1>
+                <p class="lead">Enter your Telegram API credentials to start</p>
             </div>
-            
-            {% if error %}
-            <div class="alert alert-danger" role="alert">
-                {{ error }}
-            </div>
-            {% endif %}
-            
-            {% if verification_required %}
-            <div class="card">
-                <div class="card-body">
-                    <h5 class="card-title">Verification Code</h5>
-                    <p class="card-text">Please enter the verification code sent to your Telegram account.</p>
-                    <form action="{{ url_for('submit_code') }}" method="post">
-                        <div class="mb-3">
-                            <label for="code" class="form-label">Verification Code</label>
-                            <input type="text" class="form-control" id="code" name="code" required>
+        </div>
+        
+        <div class="login-form">
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                        <div class="alert alert-{{ category if category != 'error' else 'danger' }}">
+                            {{ message }}
                         </div>
-                        <button type="submit" class="btn btn-primary w-100">Submit Code</button>
-                    </form>
-                </div>
-            </div>
-            {% else %}
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+            
             <div class="card">
                 <div class="card-body">
-                    <h5 class="card-title">Telegram API Credentials</h5>
-                    <form action="{{ url_for('login') }}" method="post">
+                    <form method="POST" action="{{ url_for('login') }}">
                         <div class="mb-3">
                             <label for="phone" class="form-label">Phone Number (with country code)</label>
-                            <input type="text" class="form-control" id="phone" name="phone" placeholder="+12345678900" required>
+                            <input type="text" class="form-control" id="phone" name="phone" placeholder="+1234567890" required>
+                            <div class="form-text">Your Telegram phone number with country code.</div>
                         </div>
+                        
                         <div class="mb-3">
                             <label for="api_id" class="form-label">API ID</label>
-                            <input type="text" class="form-control" id="api_id" name="api_id" value="{{ session.get('api_id', '') }}" required>
-                            <div class="form-text">Get your API ID from <a href="https://my.telegram.org/apps" target="_blank">https://my.telegram.org/apps</a></div>
+                            <input type="text" class="form-control" id="api_id" name="api_id" required>
+                            <div class="form-text">Get this from <a href="https://my.telegram.org/apps" target="_blank">my.telegram.org/apps</a>.</div>
                         </div>
+                        
                         <div class="mb-3">
                             <label for="api_hash" class="form-label">API Hash</label>
-                            <input type="text" class="form-control" id="api_hash" name="api_hash" value="{{ session.get('api_hash', '') }}" required>
-                            <div class="form-text">Get your API Hash from <a href="https://my.telegram.org/apps" target="_blank">https://my.telegram.org/apps</a></div>
+                            <input type="text" class="form-control" id="api_hash" name="api_hash" required>
+                            <div class="form-text">Get this from <a href="https://my.telegram.org/apps" target="_blank">my.telegram.org/apps</a>.</div>
                         </div>
-                        <div class="d-grid gap-2">
+                        
+                        <div class="d-flex gap-2">
                             <button type="submit" class="btn btn-primary">Login</button>
-                            <a href="/" class="btn btn-outline-secondary">Back to Home</a>
+                            <a href="/" class="btn btn-outline-secondary">Back</a>
                         </div>
                     </form>
                 </div>
             </div>
-            {% endif %}
+            
+            <div class="mt-3">
+                <div class="card">
+                    <div class="card-header">
+                        <h5>Important Information</h5>
+                    </div>
+                    <div class="card-body">
+                        <ul>
+                            <li>Your credentials are used only to connect to Telegram's API.</li>
+                            <li>They are stored securely and not shared with anyone.</li>
+                            <li>You can get your API ID and API Hash from <a href="https://my.telegram.org/apps" target="_blank">my.telegram.org/apps</a>.</li>
+                            <li>After login, you'll be redirected to enter the verification code sent by Telegram.</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 </body>

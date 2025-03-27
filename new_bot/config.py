@@ -5,7 +5,7 @@ from os import environ
 
 class Config:
     
-    API_ID = environ.get("API_ID", "")
+    API_ID = int(environ.get("API_ID", "0"))
     API_HASH = environ.get("API_HASH", "")
     BOT_TOKEN = environ.get("TELEGRAM_BOT_TOKEN", "") 
     BOT_OWNER_ID = [int(id) for id in environ.get("BOT_OWNER_ID", '0').split()]

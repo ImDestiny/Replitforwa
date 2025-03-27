@@ -5,8 +5,12 @@ import os
 import asyncio
 import logging
 from pyrogram import Client, idle
-from .database import db, mongodb_version
-from .config import Config, temp
+import sys
+
+# Add the parent directory to sys.path to allow absolute imports
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+from new_bot.database import db, mongodb_version
+from new_bot.config import Config, temp
 
 # Configure logging
 logging.basicConfig(
@@ -29,7 +33,7 @@ bot = Client(
 )
 
 # Import plugins here to avoid circular imports
-from .plugins import commands, regix, settings, utils
+from new_bot.plugins import commands, regix, settings, utils
 
 async def main():
     """Main entry point for the bot"""

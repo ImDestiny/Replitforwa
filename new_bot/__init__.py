@@ -1,4 +1,4 @@
-# Advanced Telegram Forwarder Bot - Package Init
-# This file makes the new_bot directory a Python package
+# Advanced Telegram Forwarder Bot - Package Initialization
 
+# Export version
 __version__ = "3.0.0"
