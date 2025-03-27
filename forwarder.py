@@ -185,8 +185,8 @@ class Forwarder:
                             last_forwarded_id=message.id
                         )
                         
-                        # Avoid flooding
-                        await asyncio.sleep(2)
+                        # Forward at a rate of 1 message every 3 seconds (20 messages per minute)
+                        await asyncio.sleep(3)
                     except errors.FloodWaitError as e:
                         logger.warning(f"Flood wait error: {e.seconds}s")
                         # Wait the required time
