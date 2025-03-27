@@ -3,100 +3,94 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login - Telegram Forwarder Bot</title>
+    <title>Login - Telegram Message Forwarder</title>
     <link rel="stylesheet" href="https://cdn.replit.com/agent/bootstrap-agent-dark-theme.min.css">
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/custom.css') }}">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    <style>
+        body {
+            padding-top: 2rem;
+        }
+        .logo {
+            max-width: 80px;
+            margin-bottom: 1rem;
+        }
+        .login-container {
+            max-width: 500px;
+            margin: 0 auto;
+        }
+    </style>
 </head>
 <body>
-    <div class="container py-5">
-        <div class="row justify-content-center">
-            <div class="col-md-8">
-                <div class="card bg-dark">
-                    <div class="card-header card-header-telegram text-center">
-                        <h3><i class="bi bi-telegram"></i> Login with Telegram</h3>
-                    </div>
-                    <div class="card-body">
-                        {% with messages = get_flashed_messages(with_categories=true) %}
-                        {% if messages %}
-                        {% for category, message in messages %}
-                        <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
-                            {{ message }}
-                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    <div class="container">
+        <div class="login-container">
+            <div class="text-center mb-4">
+                <svg class="logo" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 240" width="80" height="80">
+                    <defs>
+                        <linearGradient id="a" x1=".667" x2=".417" y1=".167" y2=".75">
+                            <stop offset="0" stop-color="#37aee2"/>
+                            <stop offset="1" stop-color="#1e96c8"/>
+                        </linearGradient>
+                        <linearGradient id="b" x1=".66" x2=".851" y1=".437" y2=".802">
+                            <stop offset="0" stop-color="#eff7fc"/>
+                            <stop offset="1" stop-color="#fff"/>
+                        </linearGradient>
+                    </defs>
+                    <circle cx="120" cy="120" r="120" fill="url(#a)"/>
+                    <path fill="#c8daea" d="M98 175c-3.888 0-3.227-1.468-4.568-5.17L82 132.207 170 80"/>
+                    <path fill="#a9c9dd" d="M98 175c3 0 4.325-1.372 6-3l16-15.558-19.958-12.035"/>
+                    <path fill="url(#b)" d="M100.04 144.41l48.36 35.729c5.519 3.045 9.501 1.468 10.876-5.123l19.685-92.763c2.015-8.08-3.08-11.746-8.36-9.349l-115.59 44.571c-7.89 3.165-7.843 7.567-1.438 9.528l29.663 9.259 68.673-43.325c3.242-1.966 6.218-.91 3.776 1.258"/>
+                </svg>
+                <h2>Login with Telegram API</h2>
+                <p>Enter your Telegram API credentials to use the forwarding bot</p>
+            </div>
+            
+            {% if error %}
+            <div class="alert alert-danger" role="alert">
+                {{ error }}
+            </div>
+            {% endif %}
+            
+            {% if verification_required %}
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Verification Code</h5>
+                    <p class="card-text">Please enter the verification code sent to your Telegram account.</p>
+                    <form action="{{ url_for('submit_code') }}" method="post">
+                        <div class="mb-3">
+                            <label for="code" class="form-label">Verification Code</label>
+                            <input type="text" class="form-control" id="code" name="code" required>
                         </div>
-                        {% endfor %}
-                        {% endif %}
-                        {% endwith %}
-
-                        {% if awaiting_code %}
-                        <div class="verification-section">
-                            <p class="lead text-center mb-4">
-                                A verification code has been sent to your Telegram app.
-                                Please enter it below:
-                            </p>
-                            <form action="{{ url_for('submit_code') }}" method="POST">
-                                <div class="mb-3">
-                                    <label for="code" class="form-label">Verification Code</label>
-                                    <input type="text" class="form-control" id="code" name="code" required autofocus>
-                                </div>
-                                <div class="d-grid gap-2">
-                                    <button type="submit" class="btn btn-telegram">Submit Code</button>
-                                </div>
-                            </form>
-                        </div>
-                        {% else %}
-                        <div class="login-section">
-                            <p class="lead text-center mb-4">
-                                You need to provide your Telegram API credentials to use this bot.
-                                <br>
-                                <small class="text-muted">Get your API ID and Hash from <a href="https://my.telegram.org/apps" target="_blank">https://my.telegram.org/apps</a></small>
-                            </p>
-                            <form action="{{ url_for('login') }}" method="POST">
-                                <div class="mb-3">
-                                    <label for="phone" class="form-label">Phone Number (with country code)</label>
-                                    <input type="text" class="form-control" id="phone" name="phone" placeholder="+1234567890" required>
-                                    <small class="form-text text-muted">Enter your full phone number including country code (e.g., +1234567890)</small>
-                                </div>
-                                <div class="mb-3">
-                                    <label for="api_id" class="form-label">API ID</label>
-                                    <input type="text" class="form-control" id="api_id" name="api_id" required>
-                                </div>
-                                <div class="mb-3">
-                                    <label for="api_hash" class="form-label">API Hash</label>
-                                    <input type="text" class="form-control" id="api_hash" name="api_hash" required>
-                                </div>
-                                <div class="d-grid gap-2">
-                                    <button type="submit" class="btn btn-telegram">Login</button>
-                                </div>
-                            </form>
-                        </div>
-                        {% endif %}
-                    </div>
-                    <div class="card-footer text-center">
-                        <a href="{{ url_for('index') }}" class="text-muted">
-                            <i class="bi bi-arrow-left"></i> Back to Home
-                        </a>
-                    </div>
-                </div>
-
-                <div class="card bg-dark mt-4">
-                    <div class="card-body">
-                        <h5 class="card-title">How to get API ID and Hash</h5>
-                        <ol>
-                            <li>Go to <a href="https://my.telegram.org/apps" target="_blank">https://my.telegram.org/apps</a></li>
-                            <li>Log in with your Telegram account</li>
-                            <li>Fill out the form to create a new application if you don't have one</li>
-                            <li>Your API ID and Hash will be displayed on the page</li>
-                        </ol>
-                        <div class="alert alert-warning">
-                            <strong>Important:</strong> Keep your API ID and Hash private. Never share them with anyone.
-                        </div>
-                    </div>
+                        <button type="submit" class="btn btn-primary w-100">Submit Code</button>
+                    </form>
                 </div>
             </div>
+            {% else %}
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Telegram API Credentials</h5>
+                    <form action="{{ url_for('login') }}" method="post">
+                        <div class="mb-3">
+                            <label for="phone" class="form-label">Phone Number (with country code)</label>
+                            <input type="text" class="form-control" id="phone" name="phone" placeholder="+12345678900" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="api_id" class="form-label">API ID</label>
+                            <input type="text" class="form-control" id="api_id" name="api_id" value="{{ session.get('api_id', '') }}" required>
+                            <div class="form-text">Get your API ID from <a href="https://my.telegram.org/apps" target="_blank">https://my.telegram.org/apps</a></div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="api_hash" class="form-label">API Hash</label>
+                            <input type="text" class="form-control" id="api_hash" name="api_hash" value="{{ session.get('api_hash', '') }}" required>
+                            <div class="form-text">Get your API Hash from <a href="https://my.telegram.org/apps" target="_blank">https://my.telegram.org/apps</a></div>
+                        </div>
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-primary">Login</button>
+                            <a href="/" class="btn btn-outline-secondary">Back to Home</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            {% endif %}
         </div>
     </div>
-
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

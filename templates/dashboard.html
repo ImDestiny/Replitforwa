@@ -3,254 +3,217 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard - Telegram Forwarder Bot</title>
+    <title>Dashboard - Telegram Message Forwarder</title>
     <link rel="stylesheet" href="https://cdn.replit.com/agent/bootstrap-agent-dark-theme.min.css">
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/custom.css') }}">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    <style>
+        body {
+            padding-top: 2rem;
+        }
+        .logo {
+            max-width: 40px;
+            margin-right: 0.5rem;
+        }
+        .sidebar {
+            position: sticky;
+            top: 20px;
+        }
+        .progress {
+            height: 25px;
+        }
+        .action-buttons {
+            white-space: nowrap;
+        }
+        .card {
+            margin-bottom: 1.5rem;
+        }
+        .source-title, .destination-title {
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 200px;
+        }
+    </style>
 </head>
 <body>
-    <div class="container-fluid py-3">
+    <div class="container">
+        <nav class="navbar navbar-expand-lg navbar-dark bg-dark mb-4">
+            <div class="container-fluid">
+                <a class="navbar-brand" href="/dashboard">
+                    <svg class="logo" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 240" width="40" height="40">
+                        <defs>
+                            <linearGradient id="a" x1=".667" x2=".417" y1=".167" y2=".75">
+                                <stop offset="0" stop-color="#37aee2"/>
+                                <stop offset="1" stop-color="#1e96c8"/>
+                            </linearGradient>
+                            <linearGradient id="b" x1=".66" x2=".851" y1=".437" y2=".802">
+                                <stop offset="0" stop-color="#eff7fc"/>
+                                <stop offset="1" stop-color="#fff"/>
+                            </linearGradient>
+                        </defs>
+                        <circle cx="120" cy="120" r="120" fill="url(#a)"/>
+                        <path fill="#c8daea" d="M98 175c-3.888 0-3.227-1.468-4.568-5.17L82 132.207 170 80"/>
+                        <path fill="#a9c9dd" d="M98 175c3 0 4.325-1.372 6-3l16-15.558-19.958-12.035"/>
+                        <path fill="url(#b)" d="M100.04 144.41l48.36 35.729c5.519 3.045 9.501 1.468 10.876-5.123l19.685-92.763c2.015-8.08-3.08-11.746-8.36-9.349l-115.59 44.571c-7.89 3.165-7.843 7.567-1.438 9.528l29.663 9.259 68.673-43.325c3.242-1.966 6.218-.91 3.776 1.258"/>
+                    </svg>
+                    Telegram Forwarder
+                </a>
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                <div class="collapse navbar-collapse" id="navbarNav">
+                    <ul class="navbar-nav me-auto">
+                        <li class="nav-item">
+                            <a class="nav-link active" href="/dashboard">Dashboard</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="#" data-bs-toggle="modal" data-bs-target="#addSourceModal">Add Source</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="#" data-bs-toggle="modal" data-bs-target="#addDestinationModal">Add Destination</a>
+                        </li>
+                    </ul>
+                    <div class="navbar-text me-3">
+                        <span id="bot-status" class="badge bg-success">Bot Running</span>
+                    </div>
+                    <div class="d-flex">
+                        <a href="/logout" class="btn btn-outline-danger">Logout</a>
+                    </div>
+                </div>
+            </div>
+        </nav>
+        
         <div class="row">
-            <div class="col-md-12 mb-3">
-                <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
-                    <div class="container-fluid">
-                        <a class="navbar-brand" href="{{ url_for('dashboard') }}">
-                            <i class="bi bi-telegram"></i> Telegram Forwarder Bot
-                        </a>
-                        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
-                            <span class="navbar-toggler-icon"></span>
-                        </button>
-                        <div class="collapse navbar-collapse" id="navbarNav">
-                            <ul class="navbar-nav ms-auto">
-                                <li class="nav-item">
-                                    <a class="nav-link" href="{{ url_for('logout') }}">
-                                        <i class="bi bi-box-arrow-right"></i> Logout
-                                    </a>
-                                </li>
-                            </ul>
+            <div class="col-md-3">
+                <div class="sidebar">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="mb-0">User Information</h5>
+                        </div>
+                        <div class="card-body">
+                            <p><strong>Phone:</strong> <span id="user-phone">{{ session.get('phone', 'Not logged in') }}</span></p>
+                            <p><strong>API ID:</strong> <span id="user-api-id">{{ session.get('api_id', 'Not set') }}</span></p>
+                            <div class="d-grid gap-2">
+                                <button id="start-forwarding-btn" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#startForwardingModal">Start Forwarding</button>
+                                <button id="cancel-forwarding-btn" class="btn btn-danger">Cancel Forwarding</button>
+                            </div>
                         </div>
                     </div>
-                </nav>
-            </div>
-        </div>
-
-        {% with messages = get_flashed_messages(with_categories=true) %}
-        {% if messages %}
-        <div class="row">
-            <div class="col-md-12">
-                {% for category, message in messages %}
-                <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
-                    {{ message }}
-                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    
+                    <div class="card mt-3">
+                        <div class="card-header">
+                            <h5 class="mb-0">Active Task</h5>
+                        </div>
+                        <div class="card-body">
+                            <div id="no-active-task" class="text-center">
+                                <p class="text-muted">No active forwarding task</p>
+                            </div>
+                            <div id="active-task-details" style="display: none;">
+                                <p><strong>Source:</strong> <span id="task-source">-</span></p>
+                                <p><strong>Destination:</strong> <span id="task-destination">-</span></p>
+                                <p><strong>Progress:</strong></p>
+                                <div class="progress">
+                                    <div id="task-progress-bar" class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" style="width: 0%;" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100">0%</div>
+                                </div>
+                                <p class="mt-2"><small id="task-stats">Forwarded: 0 / Total: 0</small></p>
+                            </div>
+                        </div>
+                    </div>
                 </div>
-                {% endfor %}
             </div>
-        </div>
-        {% endif %}
-        {% endwith %}
-
-        <!-- Forwarding Status Panel -->
-        <div class="row mb-4">
-            <div class="col-md-12">
-                <div class="card bg-dark" id="status-panel">
+            
+            <div class="col-md-9">
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="card">
+                            <div class="card-header d-flex justify-content-between align-items-center">
+                                <h5 class="mb-0">Source Channels</h5>
+                                <button class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#addSourceModal">Add New</button>
+                            </div>
+                            <div class="card-body p-0">
+                                <div id="source-list-empty" class="text-center p-3">
+                                    <p class="text-muted">No source channels added yet</p>
+                                </div>
+                                <div id="source-list">
+                                    <table class="table table-hover mb-0">
+                                        <thead>
+                                            <tr>
+                                                <th>Title</th>
+                                                <th>Type</th>
+                                                <th>Actions</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="source-table-body">
+                                            <!-- Source list will be populated dynamically -->
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-6">
+                        <div class="card">
+                            <div class="card-header d-flex justify-content-between align-items-center">
+                                <h5 class="mb-0">Destination Channels</h5>
+                                <button class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#addDestinationModal">Add New</button>
+                            </div>
+                            <div class="card-body p-0">
+                                <div id="destination-list-empty" class="text-center p-3">
+                                    <p class="text-muted">No destination channels added yet</p>
+                                </div>
+                                <div id="destination-list">
+                                    <table class="table table-hover mb-0">
+                                        <thead>
+                                            <tr>
+                                                <th>Title</th>
+                                                <th>Type</th>
+                                                <th>Actions</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="destination-table-body">
+                                            <!-- Destination list will be populated dynamically -->
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="card mt-3">
                     <div class="card-header">
-                        <h5 class="mb-0">
-                            <i class="bi bi-activity"></i> Forwarding Status
-                        </h5>
+                        <h5 class="mb-0">Forwarding History</h5>
                     </div>
-                    <div class="card-body">
-                        <div id="no-active-task" {% if active_task %}style="display: none;"{% endif %}>
-                            <p class="text-center text-muted">No active forwarding task</p>
+                    <div class="card-body p-0">
+                        <div id="history-list-empty" class="text-center p-3">
+                            <p class="text-muted">No forwarding history yet</p>
                         </div>
-                        <div id="active-task" {% if not active_task %}style="display: none;"{% endif %}>
-                            <div class="row mb-3">
-                                <div class="col-md-6">
-                                    <p><strong>Source:</strong> <span id="active-source">{{ user_data.sources[active_task.source_id].title if active_task else '' }}</span></p>
-                                </div>
-                                <div class="col-md-6">
-                                    <p><strong>Destination:</strong> <span id="active-destination">{{ user_data.destinations[active_task.destination_id].title if active_task else '' }}</span></p>
-                                </div>
-                            </div>
-                            <div class="row mb-3">
-                                <div class="col-md-12">
-                                    <p><strong>Status:</strong> 
-                                        <span id="status-value">
-                                            {% if active_task %}
-                                                {% if active_task.status == 'running' %}
-                                                <span class="badge bg-success">Running</span>
-                                                {% elif active_task.status == 'completed' %}
-                                                <span class="badge bg-primary">Completed</span>
-                                                {% elif active_task.status == 'cancelled' %}
-                                                <span class="badge bg-warning">Cancelled</span>
-                                                {% elif active_task.status == 'failed' %}
-                                                <span class="badge bg-danger">Failed</span>
-                                                {% endif %}
-                                            {% endif %}
-                                        </span>
-                                    </p>
-                                </div>
-                            </div>
-                            <div class="row mb-3">
-                                <div class="col-md-12">
-                                    <div class="progress">
-                                        <div class="progress-bar" id="progress-bar" role="progressbar" 
-                                            style="width: {{ ((active_task.forwarded_messages / active_task.total_messages) * 100) if active_task and active_task.total_messages > 0 else 0 }}%;" 
-                                            aria-valuenow="{{ ((active_task.forwarded_messages / active_task.total_messages) * 100) if active_task and active_task.total_messages > 0 else 0 }}" 
-                                            aria-valuemin="0" 
-                                            aria-valuemax="100">
-                                            <span id="progress-text">
-                                                {% if active_task and active_task.total_messages > 0 %}
-                                                {{ active_task.forwarded_messages }} / {{ active_task.total_messages }} ({{ ((active_task.forwarded_messages / active_task.total_messages) * 100)|round(1) }}%)
-                                                {% else %}
-                                                0%
-                                                {% endif %}
-                                            </span>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="row">
-                                <div class="col-md-12 text-center">
-                                    <button id="cancel-btn" class="btn btn-danger" {% if not active_task or active_task.status != 'running' %}disabled{% endif %}>
-                                        <i class="bi bi-stop-circle"></i> Cancel Forwarding
-                                    </button>
-                                </div>
-                            </div>
+                        <div id="history-list">
+                            <table class="table table-hover mb-0">
+                                <thead>
+                                    <tr>
+                                        <th>Source</th>
+                                        <th>Destination</th>
+                                        <th>Status</th>
+                                        <th>Messages</th>
+                                        <th>Date</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="history-table-body">
+                                    <!-- History list will be populated dynamically -->
+                                </tbody>
+                            </table>
                         </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div class="row">
-            <!-- Sources Panel -->
-            <div class="col-md-6 mb-4">
-                <div class="card bg-dark h-100">
-                    <div class="card-header d-flex justify-content-between align-items-center">
-                        <h5 class="mb-0"><i class="bi bi-arrow-up-right-circle"></i> Source Channels</h5>
-                        <button class="btn btn-sm btn-telegram" data-bs-toggle="modal" data-bs-target="#addSourceModal">
-                            <i class="bi bi-plus-circle"></i> Add Source
-                        </button>
-                    </div>
-                    <div class="card-body">
-                        <div class="chat-list" id="source-list">
-                            {% if user_data and user_data.sources %}
-                                {% for source_id, source in user_data.sources.items() %}
-                                <div class="chat-item" data-id="{{ source_id }}">
-                                    <div class="d-flex justify-content-between align-items-center">
-                                        <div>
-                                            <div class="title">{{ source.title }}</div>
-                                            <div class="link">{{ source.link }}</div>
-                                        </div>
-                                        <div class="actions">
-                                            <button class="btn btn-sm btn-primary set-last-message-btn" data-id="{{ source_id }}" data-bs-toggle="modal" data-bs-target="#setLastMessageModal">
-                                                <i class="bi bi-bookmark"></i> Set Last Message
-                                            </button>
-                                            <button class="btn btn-sm btn-danger delete-source-btn" data-id="{{ source_id }}">
-                                                <i class="bi bi-trash"></i>
-                                            </button>
-                                        </div>
-                                    </div>
-                                    {% if source.last_message_id %}
-                                    <div class="mt-2">
-                                        <small class="text-muted">Last Message ID: {{ source.last_message_id }}</small>
-                                    </div>
-                                    {% endif %}
-                                </div>
-                                {% endfor %}
-                            {% else %}
-                                <p class="text-center text-muted">No source channels added</p>
-                            {% endif %}
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Destinations Panel -->
-            <div class="col-md-6 mb-4">
-                <div class="card bg-dark h-100">
-                    <div class="card-header d-flex justify-content-between align-items-center">
-                        <h5 class="mb-0"><i class="bi bi-arrow-down-left-circle"></i> Destination Channels</h5>
-                        <button class="btn btn-sm btn-telegram" data-bs-toggle="modal" data-bs-target="#addDestinationModal">
-                            <i class="bi bi-plus-circle"></i> Add Destination
-                        </button>
-                    </div>
-                    <div class="card-body">
-                        <div class="chat-list" id="destination-list">
-                            {% if user_data and user_data.destinations %}
-                                {% for destination_id, destination in user_data.destinations.items() %}
-                                <div class="chat-item" data-id="{{ destination_id }}">
-                                    <div class="d-flex justify-content-between align-items-center">
-                                        <div>
-                                            <div class="title">{{ destination.title }}</div>
-                                            <div class="link">{{ destination.link }}</div>
-                                        </div>
-                                        <div class="actions">
-                                            <button class="btn btn-sm btn-danger delete-destination-btn" data-id="{{ destination_id }}">
-                                                <i class="bi bi-trash"></i>
-                                            </button>
-                                        </div>
-                                    </div>
-                                </div>
-                                {% endfor %}
-                            {% else %}
-                                <p class="text-center text-muted">No destination channels added</p>
-                            {% endif %}
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Start Forwarding Panel -->
-        <div class="row mb-4">
-            <div class="col-md-12">
-                <div class="card bg-dark">
-                    <div class="card-header">
-                        <h5 class="mb-0"><i class="bi bi-arrow-right-circle"></i> Start Forwarding</h5>
-                    </div>
-                    <div class="card-body">
-                        <form id="start-forwarding-form">
-                            <div class="row">
-                                <div class="col-md-5 mb-3">
-                                    <label for="source-select" class="form-label">Select Source</label>
-                                    <select class="form-select" id="source-select" required>
-                                        <option value="">Select a source</option>
-                                        {% if user_data and user_data.sources %}
-                                            {% for source_id, source in user_data.sources.items() %}
-                                            <option value="{{ source_id }}">{{ source.title }}</option>
-                                            {% endfor %}
-                                        {% endif %}
-                                    </select>
-                                </div>
-                                <div class="col-md-5 mb-3">
-                                    <label for="destination-select" class="form-label">Select Destination</label>
-                                    <select class="form-select" id="destination-select" required>
-                                        <option value="">Select a destination</option>
-                                        {% if user_data and user_data.destinations %}
-                                            {% for destination_id, destination in user_data.destinations.items() %}
-                                            <option value="{{ destination_id }}">{{ destination.title }}</option>
-                                            {% endfor %}
-                                        {% endif %}
-                                    </select>
-                                </div>
-                                <div class="col-md-2 align-self-end mb-3">
-                                    <button type="submit" class="btn btn-telegram w-100" id="start-forwarding-btn">
-                                        <i class="bi bi-play-circle"></i> Start
-                                    </button>
-                                </div>
-                            </div>
-                        </form>
                     </div>
                 </div>
             </div>
         </div>
     </div>
-
+    
     <!-- Add Source Modal -->
     <div class="modal fade" id="addSourceModal" tabindex="-1" aria-labelledby="addSourceModalLabel" aria-hidden="true">
         <div class="modal-dialog">
-            <div class="modal-content bg-dark">
+            <div class="modal-content">
                 <div class="modal-header">
                     <h5 class="modal-title" id="addSourceModalLabel">Add Source Channel</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
@@ -258,27 +221,29 @@
                 <div class="modal-body">
                     <form id="add-source-form">
                         <div class="mb-3">
-                            <label for="source-link" class="form-label">Channel/Group Link or Username</label>
-                            <input type="text" class="form-control" id="source-link" placeholder="https://t.me/channel_name or @channel_name" required>
-                            <small class="form-text text-muted">
-                                Examples:<br>
-                                - Public channel: @channel_name or https://t.me/channel_name<br>
-                                - Private channel: https://t.me/joinchat/XXXXXXXX
-                            </small>
+                            <label for="source-link" class="form-label">Channel/Group Link or ID</label>
+                            <input type="text" class="form-control" id="source-link" placeholder="https://t.me/example or @example or -100123456789" required>
+                            <div class="form-text">Enter a Telegram channel/group link, username, or ID</div>
                         </div>
-                        <div class="d-grid">
-                            <button type="submit" class="btn btn-telegram">Add Source</button>
+                        <div class="mb-3">
+                            <label for="last-message-link" class="form-label">Last Message Link (Optional)</label>
+                            <input type="text" class="form-control" id="last-message-link" placeholder="https://t.me/example/123">
+                            <div class="form-text">If provided, forwarding will start after this message</div>
                         </div>
                     </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-primary" id="add-source-btn">Add Source</button>
                 </div>
             </div>
         </div>
     </div>
-
+    
     <!-- Add Destination Modal -->
     <div class="modal fade" id="addDestinationModal" tabindex="-1" aria-labelledby="addDestinationModalLabel" aria-hidden="true">
         <div class="modal-dialog">
-            <div class="modal-content bg-dark">
+            <div class="modal-content">
                 <div class="modal-header">
                     <h5 class="modal-title" id="addDestinationModalLabel">Add Destination Channel</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
@@ -286,517 +251,350 @@
                 <div class="modal-body">
                     <form id="add-destination-form">
                         <div class="mb-3">
-                            <label for="destination-link" class="form-label">Channel/Group Link or Username</label>
-                            <input type="text" class="form-control" id="destination-link" placeholder="https://t.me/channel_name or @channel_name" required>
-                            <small class="form-text text-muted">
-                                Examples:<br>
-                                - Public channel: @channel_name or https://t.me/channel_name<br>
-                                - Private channel: https://t.me/joinchat/XXXXXXXX
-                            </small>
+                            <label for="destination-link" class="form-label">Channel/Group Link or ID</label>
+                            <input type="text" class="form-control" id="destination-link" placeholder="https://t.me/example or @example or -100123456789" required>
+                            <div class="form-text">Enter a Telegram channel/group link, username, or ID</div>
                         </div>
-                        <div class="d-grid">
-                            <button type="submit" class="btn btn-telegram">Add Destination</button>
+                        <div class="mb-3">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="destination-bot-admin" checked>
+                                <label class="form-check-label" for="destination-bot-admin">
+                                    I've added the bot as an admin to this channel
+                                </label>
+                            </div>
+                            <div class="form-text">Your bot must have admin rights in the destination channel</div>
                         </div>
                     </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-primary" id="add-destination-btn">Add Destination</button>
                 </div>
             </div>
         </div>
     </div>
-
-    <!-- Set Last Message Modal -->
-    <div class="modal fade" id="setLastMessageModal" tabindex="-1" aria-labelledby="setLastMessageModalLabel" aria-hidden="true">
+    
+    <!-- Start Forwarding Modal -->
+    <div class="modal fade" id="startForwardingModal" tabindex="-1" aria-labelledby="startForwardingModalLabel" aria-hidden="true">
         <div class="modal-dialog">
-            <div class="modal-content bg-dark">
+            <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title" id="setLastMessageModalLabel">Set Last Message</h5>
+                    <h5 class="modal-title" id="startForwardingModalLabel">Start Forwarding Messages</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
-                    <form id="set-last-message-form">
-                        <input type="hidden" id="last-message-source-id">
+                    <form id="start-forwarding-form">
                         <div class="mb-3">
-                            <label for="last-message-link" class="form-label">Message Link</label>
-                            <input type="text" class="form-control" id="last-message-link" placeholder="https://t.me/c/1234567890/123" required>
-                            <small class="form-text text-muted">
-                                Enter the link to the last message you want to forward up to.<br>
-                                Format: https://t.me/c/1234567890/123
-                            </small>
+                            <label for="forwarding-source" class="form-label">Source Channel</label>
+                            <select class="form-select" id="forwarding-source" required>
+                                <option value="" selected disabled>Select a source channel</option>
+                                <!-- Options will be populated dynamically -->
+                            </select>
                         </div>
-                        <div class="d-grid">
-                            <button type="submit" class="btn btn-telegram">Set Last Message</button>
+                        <div class="mb-3">
+                            <label for="forwarding-destination" class="form-label">Destination Channel</label>
+                            <select class="form-select" id="forwarding-destination" required>
+                                <option value="" selected disabled>Select a destination channel</option>
+                                <!-- Options will be populated dynamically -->
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label for="skip-messages" class="form-label">Skip Messages</label>
+                            <input type="number" class="form-control" id="skip-messages" value="0" min="0">
+                            <div class="form-text">Number of messages to skip from the beginning</div>
+                        </div>
+                        <div class="mb-3 form-check">
+                            <input type="checkbox" class="form-check-input" id="skip-duplicates" checked>
+                            <label class="form-check-label" for="skip-duplicates">Skip duplicate messages</label>
                         </div>
                     </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-primary" id="start-forwarding-confirm-btn">Start Forwarding</button>
                 </div>
             </div>
         </div>
     </div>
-
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            // Add Source Form
-            document.getElementById('add-source-form').addEventListener('submit', function(e) {
-                e.preventDefault();
-                
-                const sourceLink = document.getElementById('source-link').value;
-                
-                fetch('{{ url_for("add_source") }}', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/x-www-form-urlencoded',
-                    },
-                    body: `source_link=${encodeURIComponent(sourceLink)}`
-                })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
-                        // Add the source to the list
-                        const sourceList = document.getElementById('source-list');
-                        
-                        // Remove "no sources" message if it exists
-                        if (sourceList.querySelector('p.text-muted')) {
-                            sourceList.innerHTML = '';
-                        }
-                        
-                        const source = data.source;
-                        const sourceItem = document.createElement('div');
-                        sourceItem.className = 'chat-item';
-                        sourceItem.dataset.id = source.id;
-                        sourceItem.innerHTML = `
-                            <div class="d-flex justify-content-between align-items-center">
-                                <div>
-                                    <div class="title">${source.title}</div>
-                                    <div class="link">${source.link}</div>
-                                </div>
-                                <div class="actions">
-                                    <button class="btn btn-sm btn-primary set-last-message-btn" data-id="${source.id}" data-bs-toggle="modal" data-bs-target="#setLastMessageModal">
-                                        <i class="bi bi-bookmark"></i> Set Last Message
-                                    </button>
-                                    <button class="btn btn-sm btn-danger delete-source-btn" data-id="${source.id}">
-                                        <i class="bi bi-trash"></i>
-                                    </button>
-                                </div>
-                            </div>
-                        `;
-                        sourceList.appendChild(sourceItem);
-                        
-                        // Add to source select
-                        const sourceSelect = document.getElementById('source-select');
-                        const option = document.createElement('option');
-                        option.value = source.id;
-                        option.textContent = source.title;
-                        sourceSelect.appendChild(option);
-                        
-                        // Reset form and close modal
-                        document.getElementById('source-link').value = '';
-                        bootstrap.Modal.getInstance(document.getElementById('addSourceModal')).hide();
-
-                        // Add event listener to the new buttons
-                        sourceItem.querySelector('.set-last-message-btn').addEventListener('click', handleSetLastMessageClick);
-                        sourceItem.querySelector('.delete-source-btn').addEventListener('click', handleDeleteSourceClick);
-                    } else {
-                        alert(`Error: ${data.error}`);
-                    }
-                })
-                .catch(error => {
-                    console.error('Error:', error);
-                    alert('An error occurred. Please try again.');
-                });
-            });
+            // Initially load data
+            loadSources();
+            loadDestinations();
+            loadForwardingStatus();
             
-            // Add Destination Form
-            document.getElementById('add-destination-form').addEventListener('submit', function(e) {
-                e.preventDefault();
-                
-                const destinationLink = document.getElementById('destination-link').value;
-                
-                fetch('{{ url_for("add_destination") }}', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/x-www-form-urlencoded',
-                    },
-                    body: `destination_link=${encodeURIComponent(destinationLink)}`
-                })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
-                        // Add the destination to the list
-                        const destinationList = document.getElementById('destination-list');
-                        
-                        // Remove "no destinations" message if it exists
-                        if (destinationList.querySelector('p.text-muted')) {
-                            destinationList.innerHTML = '';
-                        }
-                        
-                        const destination = data.destination;
-                        const destinationItem = document.createElement('div');
-                        destinationItem.className = 'chat-item';
-                        destinationItem.dataset.id = destination.id;
-                        destinationItem.innerHTML = `
-                            <div class="d-flex justify-content-between align-items-center">
-                                <div>
-                                    <div class="title">${destination.title}</div>
-                                    <div class="link">${destination.link}</div>
-                                </div>
-                                <div class="actions">
-                                    <button class="btn btn-sm btn-danger delete-destination-btn" data-id="${destination.id}">
-                                        <i class="bi bi-trash"></i>
-                                    </button>
-                                </div>
-                            </div>
-                        `;
-                        destinationList.appendChild(destinationItem);
-                        
-                        // Add to destination select
-                        const destinationSelect = document.getElementById('destination-select');
-                        const option = document.createElement('option');
-                        option.value = destination.id;
-                        option.textContent = destination.title;
-                        destinationSelect.appendChild(option);
-                        
-                        // Reset form and close modal
-                        document.getElementById('destination-link').value = '';
-                        bootstrap.Modal.getInstance(document.getElementById('addDestinationModal')).hide();
-
-                        // Add event listener to the new delete button
-                        destinationItem.querySelector('.delete-destination-btn').addEventListener('click', handleDeleteDestinationClick);
-                    } else {
-                        alert(`Error: ${data.error}`);
-                    }
-                })
-                .catch(error => {
-                    console.error('Error:', error);
-                    alert('An error occurred. Please try again.');
-                });
-            });
+            // Set up interval to update status
+            setInterval(loadForwardingStatus, 5000);
             
-            // Set Last Message Form
-            document.getElementById('set-last-message-form').addEventListener('submit', function(e) {
-                e.preventDefault();
-                
-                const sourceId = document.getElementById('last-message-source-id').value;
-                const lastMessageLink = document.getElementById('last-message-link').value;
-                
-                fetch('{{ url_for("set_last_message") }}', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/x-www-form-urlencoded',
-                    },
-                    body: `source_id=${encodeURIComponent(sourceId)}&last_message_link=${encodeURIComponent(lastMessageLink)}`
-                })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
-                        // Update the source item
-                        const sourceItem = document.querySelector(`.chat-item[data-id="${sourceId}"]`);
-                        
-                        // Add or update the last message ID display
-                        let lastMessageDiv = sourceItem.querySelector('.mt-2');
-                        if (!lastMessageDiv) {
-                            lastMessageDiv = document.createElement('div');
-                            lastMessageDiv.className = 'mt-2';
-                            sourceItem.appendChild(lastMessageDiv);
-                        }
-                        
-                        lastMessageDiv.innerHTML = `<small class="text-muted">Last Message ID: ${data.message_id}</small>`;
-                        
-                        // Reset form and close modal
-                        document.getElementById('last-message-link').value = '';
-                        bootstrap.Modal.getInstance(document.getElementById('setLastMessageModal')).hide();
-                    } else {
-                        alert(`Error: ${data.error}`);
-                    }
-                })
-                .catch(error => {
-                    console.error('Error:', error);
-                    alert('An error occurred. Please try again.');
-                });
-            });
+            // Set up event listeners
+            document.getElementById('add-source-btn').addEventListener('click', addSource);
+            document.getElementById('add-destination-btn').addEventListener('click', addDestination);
+            document.getElementById('start-forwarding-confirm-btn').addEventListener('click', startForwarding);
+            document.getElementById('cancel-forwarding-btn').addEventListener('click', cancelForwarding);
             
-            // Start Forwarding Form
-            document.getElementById('start-forwarding-form').addEventListener('submit', function(e) {
-                e.preventDefault();
-                
-                const sourceId = document.getElementById('source-select').value;
-                const destinationId = document.getElementById('destination-select').value;
-                
-                if (!sourceId || !destinationId) {
-                    alert('Please select both a source and a destination.');
-                    return;
-                }
-                
-                // Disable the button and show loading
-                const startBtn = document.getElementById('start-forwarding-btn');
-                startBtn.disabled = true;
-                startBtn.innerHTML = '<span class="telegram-spinner"></span> Starting...';
-                
-                fetch('{{ url_for("start_forwarding") }}', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/x-www-form-urlencoded',
-                    },
-                    body: `source_id=${encodeURIComponent(sourceId)}&destination_id=${encodeURIComponent(destinationId)}`
-                })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
-                        // Update UI to show active task
-                        document.getElementById('no-active-task').style.display = 'none';
-                        document.getElementById('active-task').style.display = 'block';
-                        
-                        // Set the source and destination names
-                        const sourceSelect = document.getElementById('source-select');
-                        const destinationSelect = document.getElementById('destination-select');
-                        document.getElementById('active-source').textContent = sourceSelect.options[sourceSelect.selectedIndex].text;
-                        document.getElementById('active-destination').textContent = destinationSelect.options[destinationSelect.selectedIndex].text;
-                        
-                        // Set status
-                        document.getElementById('status-value').innerHTML = '<span class="badge bg-success">Running</span>';
-                        
-                        // Enable cancel button
-                        document.getElementById('cancel-btn').disabled = false;
-                        
-                        // Start polling for status updates
-                        startStatusPolling();
-                    } else {
-                        alert(`Error: ${data.error}`);
-                    }
-                    
-                    // Re-enable the button
-                    startBtn.disabled = false;
-                    startBtn.innerHTML = '<i class="bi bi-play-circle"></i> Start';
-                })
-                .catch(error => {
-                    console.error('Error:', error);
-                    alert('An error occurred. Please try again.');
-                    
-                    // Re-enable the button
-                    startBtn.disabled = false;
-                    startBtn.innerHTML = '<i class="bi bi-play-circle"></i> Start';
-                });
-            });
-            
-            // Cancel Forwarding Button
-            document.getElementById('cancel-btn').addEventListener('click', function() {
-                if (!confirm('Are you sure you want to cancel the forwarding process?')) {
-                    return;
-                }
-                
-                this.disabled = true;
-                this.innerHTML = '<span class="telegram-spinner"></span> Cancelling...';
-                
-                fetch('{{ url_for("cancel_forwarding") }}', {
-                    method: 'POST'
-                })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
-                        document.getElementById('status-value').innerHTML = '<span class="badge bg-warning">Cancelled</span>';
-                        this.disabled = true;
-                    } else {
-                        alert(`Error: ${data.error}`);
-                        this.disabled = false;
-                        this.innerHTML = '<i class="bi bi-stop-circle"></i> Cancel Forwarding';
-                    }
-                })
-                .catch(error => {
-                    console.error('Error:', error);
-                    alert('An error occurred. Please try again.');
-                    this.disabled = false;
-                    this.innerHTML = '<i class="bi bi-stop-circle"></i> Cancel Forwarding';
-                });
-            });
-            
-            // Function to handle setting last message
-            function handleSetLastMessageClick() {
-                const sourceId = this.dataset.id;
-                document.getElementById('last-message-source-id').value = sourceId;
-            }
-            
-            // Function to handle deleting a source
-            function handleDeleteSourceClick() {
-                if (!confirm('Are you sure you want to delete this source?')) {
-                    return;
-                }
-                
-                const sourceId = this.dataset.id;
-                
-                fetch('{{ url_for("delete_source") }}', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/x-www-form-urlencoded',
-                    },
-                    body: `source_id=${encodeURIComponent(sourceId)}`
-                })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
-                        // Remove from the list
-                        const sourceItem = document.querySelector(`.chat-item[data-id="${sourceId}"]`);
-                        sourceItem.remove();
-                        
-                        // Remove from the select
-                        const sourceSelect = document.getElementById('source-select');
-                        const option = sourceSelect.querySelector(`option[value="${sourceId}"]`);
-                        if (option) {
-                            option.remove();
-                        }
-                        
-                        // If no more sources, add the message
-                        const sourceList = document.getElementById('source-list');
-                        if (sourceList.children.length === 0) {
-                            sourceList.innerHTML = '<p class="text-center text-muted">No source channels added</p>';
-                        }
-                    } else {
-                        alert(`Error: ${data.error}`);
-                    }
-                })
-                .catch(error => {
-                    console.error('Error:', error);
-                    alert('An error occurred. Please try again.');
-                });
-            }
-            
-            // Function to handle deleting a destination
-            function handleDeleteDestinationClick() {
-                if (!confirm('Are you sure you want to delete this destination?')) {
-                    return;
-                }
-                
-                const destinationId = this.dataset.id;
-                
-                fetch('{{ url_for("delete_destination") }}', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/x-www-form-urlencoded',
-                    },
-                    body: `destination_id=${encodeURIComponent(destinationId)}`
-                })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
-                        // Remove from the list
-                        const destinationItem = document.querySelector(`.chat-item[data-id="${destinationId}"]`);
-                        destinationItem.remove();
-                        
-                        // Remove from the select
-                        const destinationSelect = document.getElementById('destination-select');
-                        const option = destinationSelect.querySelector(`option[value="${destinationId}"]`);
-                        if (option) {
-                            option.remove();
-                        }
-                        
-                        // If no more destinations, add the message
-                        const destinationList = document.getElementById('destination-list');
-                        if (destinationList.children.length === 0) {
-                            destinationList.innerHTML = '<p class="text-center text-muted">No destination channels added</p>';
-                        }
-                    } else {
-                        alert(`Error: ${data.error}`);
-                    }
-                })
-                .catch(error => {
-                    console.error('Error:', error);
-                    alert('An error occurred. Please try again.');
-                });
-            }
-            
-            // Add event listeners to all set last message buttons
-            document.querySelectorAll('.set-last-message-btn').forEach(btn => {
-                btn.addEventListener('click', handleSetLastMessageClick);
-            });
-            
-            // Add event listeners to all delete source buttons
-            document.querySelectorAll('.delete-source-btn').forEach(btn => {
-                btn.addEventListener('click', handleDeleteSourceClick);
-            });
-            
-            // Add event listeners to all delete destination buttons
-            document.querySelectorAll('.delete-destination-btn').forEach(btn => {
-                btn.addEventListener('click', handleDeleteDestinationClick);
-            });
-            
-            // Status polling
-            let statusPollingInterval = null;
-            
-            function startStatusPolling() {
-                if (statusPollingInterval) {
-                    clearInterval(statusPollingInterval);
-                }
-                
-                // Poll every 2 seconds
-                statusPollingInterval = setInterval(pollStatus, 2000);
-            }
-            
-            function stopStatusPolling() {
-                if (statusPollingInterval) {
-                    clearInterval(statusPollingInterval);
-                    statusPollingInterval = null;
-                }
-            }
-            
-            function pollStatus() {
-                fetch('{{ url_for("status") }}')
-                .then(response => response.json())
-                .then(data => {
-                    if (data.error) {
-                        console.error('Status error:', data.error);
-                        return;
-                    }
-                    
-                    // Update progress
-                    const progressBar = document.getElementById('progress-bar');
-                    const progressText = document.getElementById('progress-text');
-                    
-                    if (data.total_messages > 0) {
-                        const progress = data.progress;
-                        progressBar.style.width = `${progress}%`;
-                        progressBar.setAttribute('aria-valuenow', progress);
-                        progressText.textContent = `${data.forwarded_messages} / ${data.total_messages} (${progress}%)`;
-                    } else {
-                        progressBar.style.width = '0%';
-                        progressBar.setAttribute('aria-valuenow', 0);
-                        progressText.textContent = '0%';
-                    }
-                    
-                    // Update status
-                    let statusHtml = '';
-                    if (data.status === 'running') {
-                        statusHtml = '<span class="badge bg-success">Running</span>';
-                        document.getElementById('cancel-btn').disabled = false;
-                    } else if (data.status === 'completed') {
-                        statusHtml = '<span class="badge bg-primary">Completed</span>';
-                        document.getElementById('cancel-btn').disabled = true;
-                        stopStatusPolling();
-                    } else if (data.status === 'cancelled') {
-                        statusHtml = '<span class="badge bg-warning">Cancelled</span>';
-                        document.getElementById('cancel-btn').disabled = true;
-                        stopStatusPolling();
-                    } else if (data.status === 'failed') {
-                        statusHtml = `<span class="badge bg-danger">Failed</span> ${data.error ? `<small class="text-danger">(${data.error})</small>` : ''}`;
-                        document.getElementById('cancel-btn').disabled = true;
-                        stopStatusPolling();
-                    } else {
-                        statusHtml = '<span class="badge bg-secondary">Idle</span>';
-                        document.getElementById('cancel-btn').disabled = true;
-                        stopStatusPolling();
-                    }
-                    
-                    document.getElementById('status-value').innerHTML = statusHtml;
-                })
-                .catch(error => {
-                    console.error('Status polling error:', error);
-                });
-            }
-            
-            // Start polling if there's an active task
-            if (document.getElementById('active-task').style.display !== 'none') {
-                const statusValue = document.getElementById('status-value').textContent.trim();
-                if (statusValue.includes('Running')) {
-                    startStatusPolling();
-                }
-            }
+            // Update the bot status
+            updateBotStatus();
+            setInterval(updateBotStatus, 10000);
         });
+        
+        function updateBotStatus() {
+            fetch('/bot_status')
+                .then(response => response.json())
+                .then(data => {
+                    const statusBadge = document.getElementById('bot-status');
+                    if (data.status === 'running') {
+                        statusBadge.textContent = 'Bot Running';
+                        statusBadge.className = 'badge bg-success';
+                    } else {
+                        statusBadge.textContent = 'Bot Stopped';
+                        statusBadge.className = 'badge bg-danger';
+                    }
+                })
+                .catch(error => {
+                    console.error('Error checking bot status:', error);
+                    const statusBadge = document.getElementById('bot-status');
+                    statusBadge.textContent = 'Status Error';
+                    statusBadge.className = 'badge bg-warning';
+                });
+        }
+        
+        function loadSources() {
+            // In a real implementation, this would fetch sources from the server
+            // For now, we'll use dummy data
+            const sources = [
+                { id: 1, title: 'Example Channel', type: 'channel', username: '@example' },
+                { id: 2, title: 'News Group', type: 'group', username: '@news' }
+            ];
+            
+            const sourceTableBody = document.getElementById('source-table-body');
+            const sourceListEmpty = document.getElementById('source-list-empty');
+            
+            if (sources.length === 0) {
+                sourceListEmpty.style.display = 'block';
+                document.getElementById('source-list').style.display = 'none';
+                return;
+            }
+            
+            sourceListEmpty.style.display = 'none';
+            document.getElementById('source-list').style.display = 'block';
+            
+            sourceTableBody.innerHTML = '';
+            sources.forEach(source => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td><span class="source-title">${source.title}</span></td>
+                    <td>${source.type}</td>
+                    <td class="action-buttons">
+                        <button class="btn btn-sm btn-outline-primary" onclick="setLastMessage(${source.id})">Set Last Message</button>
+                        <button class="btn btn-sm btn-outline-danger" onclick="deleteSource(${source.id})">Delete</button>
+                    </td>
+                `;
+                sourceTableBody.appendChild(row);
+            });
+            
+            // Also update the source dropdown in the start forwarding modal
+            const sourceSelect = document.getElementById('forwarding-source');
+            sourceSelect.innerHTML = '<option value="" selected disabled>Select a source channel</option>';
+            sources.forEach(source => {
+                const option = document.createElement('option');
+                option.value = source.id;
+                option.textContent = source.title;
+                sourceSelect.appendChild(option);
+            });
+        }
+        
+        function loadDestinations() {
+            // In a real implementation, this would fetch destinations from the server
+            // For now, we'll use dummy data
+            const destinations = [
+                { id: 1, title: 'My Channel', type: 'channel', username: '@mychannel' },
+                { id: 2, title: 'Archive Group', type: 'group', username: '@archive' }
+            ];
+            
+            const destinationTableBody = document.getElementById('destination-table-body');
+            const destinationListEmpty = document.getElementById('destination-list-empty');
+            
+            if (destinations.length === 0) {
+                destinationListEmpty.style.display = 'block';
+                document.getElementById('destination-list').style.display = 'none';
+                return;
+            }
+            
+            destinationListEmpty.style.display = 'none';
+            document.getElementById('destination-list').style.display = 'block';
+            
+            destinationTableBody.innerHTML = '';
+            destinations.forEach(destination => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td><span class="destination-title">${destination.title}</span></td>
+                    <td>${destination.type}</td>
+                    <td class="action-buttons">
+                        <button class="btn btn-sm btn-outline-danger" onclick="deleteDestination(${destination.id})">Delete</button>
+                    </td>
+                `;
+                destinationTableBody.appendChild(row);
+            });
+            
+            // Also update the destination dropdown in the start forwarding modal
+            const destinationSelect = document.getElementById('forwarding-destination');
+            destinationSelect.innerHTML = '<option value="" selected disabled>Select a destination channel</option>';
+            destinations.forEach(destination => {
+                const option = document.createElement('option');
+                option.value = destination.id;
+                option.textContent = destination.title;
+                destinationSelect.appendChild(option);
+            });
+        }
+        
+        function loadForwardingStatus() {
+            // In a real implementation, this would fetch the status from the server
+            // For now, we'll use dummy data to show an active task
+            const isActive = false; // Change to true to show active task
+            
+            const noActiveTask = document.getElementById('no-active-task');
+            const activeTaskDetails = document.getElementById('active-task-details');
+            
+            if (isActive) {
+                noActiveTask.style.display = 'none';
+                activeTaskDetails.style.display = 'block';
+                
+                // Update task details
+                document.getElementById('task-source').textContent = 'Example Channel';
+                document.getElementById('task-destination').textContent = 'My Channel';
+                
+                // Update progress
+                const progress = 45; // percentage
+                const progressBar = document.getElementById('task-progress-bar');
+                progressBar.style.width = progress + '%';
+                progressBar.textContent = progress + '%';
+                progressBar.setAttribute('aria-valuenow', progress);
+                
+                // Update stats
+                document.getElementById('task-stats').textContent = 'Forwarded: 45 / Total: 100';
+                
+                // Update button states
+                document.getElementById('start-forwarding-btn').disabled = true;
+                document.getElementById('cancel-forwarding-btn').disabled = false;
+            } else {
+                noActiveTask.style.display = 'block';
+                activeTaskDetails.style.display = 'none';
+                
+                // Update button states
+                document.getElementById('start-forwarding-btn').disabled = false;
+                document.getElementById('cancel-forwarding-btn').disabled = true;
+            }
+        }
+        
+        function addSource() {
+            const sourceLink = document.getElementById('source-link').value;
+            const lastMessageLink = document.getElementById('last-message-link').value;
+            
+            if (!sourceLink) {
+                alert('Please enter a source link');
+                return;
+            }
+            
+            // In a real implementation, this would send a request to the server
+            console.log('Adding source:', sourceLink, 'Last message:', lastMessageLink);
+            
+            // Close the modal
+            const modal = bootstrap.Modal.getInstance(document.getElementById('addSourceModal'));
+            modal.hide();
+            
+            // Refresh the sources list
+            loadSources();
+        }
+        
+        function addDestination() {
+            const destinationLink = document.getElementById('destination-link').value;
+            const botAdmin = document.getElementById('destination-bot-admin').checked;
+            
+            if (!destinationLink) {
+                alert('Please enter a destination link');
+                return;
+            }
+            
+            if (!botAdmin) {
+                alert('Please add the bot as an admin to the destination channel');
+                return;
+            }
+            
+            // In a real implementation, this would send a request to the server
+            console.log('Adding destination:', destinationLink);
+            
+            // Close the modal
+            const modal = bootstrap.Modal.getInstance(document.getElementById('addDestinationModal'));
+            modal.hide();
+            
+            // Refresh the destinations list
+            loadDestinations();
+        }
+        
+        function setLastMessage(sourceId) {
+            const lastMessageLink = prompt('Enter the last message link:');
+            if (lastMessageLink) {
+                // In a real implementation, this would send a request to the server
+                console.log('Setting last message for source', sourceId, ':', lastMessageLink);
+            }
+        }
+        
+        function deleteSource(sourceId) {
+            if (confirm('Are you sure you want to delete this source?')) {
+                // In a real implementation, this would send a request to the server
+                console.log('Deleting source:', sourceId);
+                
+                // Refresh the sources list
+                loadSources();
+            }
+        }
+        
+        function deleteDestination(destinationId) {
+            if (confirm('Are you sure you want to delete this destination?')) {
+                // In a real implementation, this would send a request to the server
+                console.log('Deleting destination:', destinationId);
+                
+                // Refresh the destinations list
+                loadDestinations();
+            }
+        }
+        
+        function startForwarding() {
+            const sourceId = document.getElementById('forwarding-source').value;
+            const destinationId = document.getElementById('forwarding-destination').value;
+            const skipMessages = document.getElementById('skip-messages').value;
+            const skipDuplicates = document.getElementById('skip-duplicates').checked;
+            
+            if (!sourceId || !destinationId) {
+                alert('Please select both source and destination channels');
+                return;
+            }
+            
+            // In a real implementation, this would send a request to the server
+            console.log('Starting forwarding from', sourceId, 'to', destinationId);
+            console.log('Skip messages:', skipMessages, 'Skip duplicates:', skipDuplicates);
+            
+            // Close the modal
+            const modal = bootstrap.Modal.getInstance(document.getElementById('startForwardingModal'));
+            modal.hide();
+            
+            // Refresh the forwarding status
+            loadForwardingStatus();
+        }
+        
+        function cancelForwarding() {
+            if (confirm('Are you sure you want to cancel the current forwarding task?')) {
+                // In a real implementation, this would send a request to the server
+                console.log('Cancelling forwarding');
+                
+                // Refresh the forwarding status
+                loadForwardingStatus();
+            }
+        }
     </script>
+    
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
