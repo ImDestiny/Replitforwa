@@ -243,6 +243,33 @@ def stop_bot():
     bot_running['status'] = False
     return jsonify({"message": "Bot stopped successfully"})
 
+@app.route('/test_dashboard')
+def test_dashboard():
+    # Create sample data for testing
+    sample_data = {
+        'sources': {
+            '1': {
+                'title': 'Test Source 1',
+                'link': 'https://t.me/test_source_1'
+            },
+            '2': {
+                'title': 'Test Source 2',
+                'link': 'https://t.me/test_source_2'
+            }
+        },
+        'destinations': {
+            '1': {
+                'title': 'Test Destination 1',
+                'link': 'https://t.me/test_destination_1'
+            },
+            '2': {
+                'title': 'Test Destination 2',
+                'link': 'https://t.me/test_destination_2'
+            }
+        }
+    }
+    return render_template('dashboard.html', phone='123456789', user_data=sample_data)
+
 @app.route('/health')
 def health():
     return jsonify({"status": "ok"})
