@@ -5,10 +5,10 @@ from os import environ
 
 class Config:
     
-    API_ID = int(environ.get("API_ID", "0"))
+    API_ID = int(environ.get("API_ID", ""))
     API_HASH = environ.get("API_HASH", "")
     BOT_TOKEN = environ.get("TELEGRAM_BOT_TOKEN", "") 
-    BOT_OWNER_ID = [int(id) for id in environ.get("BOT_OWNER_ID", '0').split()]
+    BOT_OWNER_ID = [int(id) for id in environ.get("BOT_OWNER_ID", '').split()]
     BOT_SESSION = environ.get("BOT_SESSION", "advanced_forwarder_bot") 
 
     PICS = (environ.get('PICS', 'https://graph.org/file/e223aea8aca83e99162bb.jpg'))
@@ -18,7 +18,7 @@ class Config:
     DATABASE_NAME = environ.get("PGDATABASE", "ForwarderBot")
     
     LOG_CHANNEL = int(environ.get('LOG_CHANNEL', '0'))
-    FORCE_SUB_CHANNEL = environ.get("FORCE_SUB_CHANNEL", "") # FORCE SUB channel link 
+    FORCE_SUB_CHANNEL = environ.get("FORCE_SUB_CHANNEL", "0") # FORCE SUB channel link 
     FORCE_SUB_ON = environ.get("FORCE_SUB_ON", "FALSE")  # FORCE SUB ON - OFF
     
     # New settings for improved forwarding
