@@ -8,34 +8,34 @@
     <style>
         body {
             padding-top: 2rem;
+            padding-bottom: 2rem;
         }
         .logo {
             max-width: 50px;
-            margin-bottom: 0.5rem;
+            margin-right: 0.5rem;
         }
         .card {
             margin-bottom: 1.5rem;
         }
+        .status-badge {
+            font-size: 0.8rem;
+        }
         .progress {
-            height: 25px;
+            height: 1.5rem;
         }
         .progress-label {
-            position: absolute;
-            width: 100%;
+            line-height: 1.5rem;
             color: white;
             font-weight: bold;
-            text-align: center;
-            line-height: 25px;
-            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <nav class="navbar navbar-expand-lg navbar-dark bg-dark mb-4">
-            <div class="container-fluid">
-                <a class="navbar-brand d-flex align-items-center" href="/dashboard">
-                    <svg class="logo me-2" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 240" width="32" height="32">
+        <div class="row mb-4">
+            <div class="col-md-12">
+                <div class="d-flex align-items-center">
+                    <svg class="logo" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 240" width="50" height="50">
                         <defs>
                             <linearGradient id="a" x1=".667" x2=".417" y1=".167" y2=".75">
                                 <stop offset="0" stop-color="#37aee2"/>
@@ -51,186 +51,161 @@
                         <path fill="#a9c9dd" d="M98 175c3 0 4.325-1.372 6-3l16-15.558-19.958-12.035"/>
                         <path fill="url(#b)" d="M100.04 144.41l48.36 35.729c5.519 3.045 9.501 1.468 10.876-5.123l19.685-92.763c2.015-8.08-3.08-11.746-8.36-9.349l-115.59 44.571c-7.89 3.165-7.843 7.567-1.438 9.528l29.663 9.259 68.673-43.325c3.242-1.966 6.218-.91 3.776 1.258"/>
                     </svg>
-                    Telegram Forwarder
-                </a>
-                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
-                    <span class="navbar-toggler-icon"></span>
-                </button>
-                <div class="collapse navbar-collapse" id="navbarNav">
-                    <ul class="navbar-nav me-auto">
-                        <li class="nav-item">
-                            <a class="nav-link active" href="/dashboard">Dashboard</a>
-                        </li>
-                    </ul>
-                    <ul class="navbar-nav">
-                        <li class="nav-item">
-                            <a class="nav-link" href="/logout">Logout</a>
-                        </li>
-                    </ul>
-                </div>
-            </div>
-        </nav>
-
-        {% with messages = get_flashed_messages(with_categories=true) %}
-            {% if messages %}
-                {% for category, message in messages %}
-                    <div class="alert alert-{{ category if category != 'error' else 'danger' }}">
-                        {{ message }}
+                    <h1 class="m-0">Dashboard</h1>
+                    <div class="ms-auto">
+                        <a href="/" class="btn btn-outline-danger">Logout</a>
                     </div>
-                {% endfor %}
-            {% endif %}
-        {% endwith %}
-
+                </div>
+                <p class="lead">Welcome, {{ phone }}</p>
+            </div>
+        </div>
+        
         <div class="row">
-            <div class="col-lg-8">
+            <div class="col-md-8">
+                <!-- Forwarding Status Card -->
                 <div class="card">
                     <div class="card-header d-flex justify-content-between align-items-center">
-                        <h5 class="mb-0">Forwarding Status</h5>
-                        <button id="refresh-status" class="btn btn-sm btn-outline-primary">Refresh</button>
+                        <h5 class="m-0">Forwarding Status</h5>
+                        <span id="status-badge" class="badge bg-secondary status-badge">Idle</span>
                     </div>
                     <div class="card-body">
-                        <div id="status-container">
-                            <div class="text-center py-4" id="status-loading">
-                                <div class="spinner-border" role="status">
-                                    <span class="visually-hidden">Loading...</span>
-                                </div>
-                                <p class="mt-2">Loading status...</p>
+                        <div id="status-content">
+                            <p>No active forwarding task.</p>
+                        </div>
+                        
+                        <div id="progress-container" class="mt-3" style="display: none;">
+                            <div class="progress position-relative">
+                                <div id="progress-bar" class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" style="width: 0%"></div>
+                                <div class="position-absolute w-100 text-center progress-label" id="progress-label">0%</div>
                             </div>
-                            <div id="status-content" style="display: none;">
-                                <div class="mb-3">
-                                    <div class="d-flex justify-content-between">
-                                        <span>Progress:</span>
-                                        <span id="progress-text">0/0</span>
-                                    </div>
-                                    <div class="progress position-relative">
-                                        <div class="progress-bar" id="progress-bar" role="progressbar" style="width: 0%;" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
-                                        <div class="progress-label" id="progress-percent">0%</div>
-                                    </div>
-                                </div>
-                                <div class="row">
-                                    <div class="col-md-6">
-                                        <ul class="list-group">
-                                            <li class="list-group-item d-flex justify-content-between">
-                                                <span>Source:</span>
-                                                <span id="source-name">-</span>
-                                            </li>
-                                            <li class="list-group-item d-flex justify-content-between">
-                                                <span>Destination:</span>
-                                                <span id="destination-name">-</span>
-                                            </li>
-                                            <li class="list-group-item d-flex justify-content-between">
-                                                <span>Status:</span>
-                                                <span id="status-text">Inactive</span>
-                                            </li>
-                                        </ul>
-                                    </div>
-                                    <div class="col-md-6">
-                                        <ul class="list-group">
-                                            <li class="list-group-item d-flex justify-content-between">
-                                                <span>Forwarded:</span>
-                                                <span id="forwarded-count">0</span>
-                                            </li>
-                                            <li class="list-group-item d-flex justify-content-between">
-                                                <span>Duplicates:</span>
-                                                <span id="duplicate-count">0</span>
-                                            </li>
-                                            <li class="list-group-item d-flex justify-content-between">
-                                                <span>Skipped:</span>
-                                                <span id="skipped-count">0</span>
-                                            </li>
-                                        </ul>
-                                    </div>
-                                </div>
-                                <div class="mt-3" id="control-buttons">
-                                    <button id="cancel-forwarding" class="btn btn-danger" style="display: none;">Cancel Forwarding</button>
-                                </div>
+                            <div class="d-flex justify-content-between mt-1">
+                                <small id="progress-details">0/0 messages</small>
+                                <small id="progress-eta">ETA: calculating...</small>
                             </div>
+                        </div>
+                        
+                        <div class="mt-3">
+                            <button id="cancel-btn" class="btn btn-danger" style="display: none;">Cancel Forwarding</button>
                         </div>
                     </div>
                 </div>
                 
+                <!-- Start Forwarding Card -->
                 <div class="card">
                     <div class="card-header">
-                        <h5>Start New Forwarding</h5>
+                        <h5 class="m-0">Start New Forwarding</h5>
                     </div>
                     <div class="card-body">
                         <form id="forwarding-form">
                             <div class="mb-3">
-                                <label for="source-select" class="form-label">Source</label>
+                                <label for="source-select" class="form-label">Source Channel/Group</label>
                                 <select class="form-select" id="source-select" required>
-                                    <option value="" selected disabled>Select a source channel/group</option>
-                                    <!-- Sources will be populated by JavaScript -->
+                                    <option value="" selected disabled>Select a source</option>
+                                    {% if user_data and user_data.sources %}
+                                        {% for id, source in user_data.sources.items() %}
+                                            <option value="{{ id }}">{{ source.title }} ({{ source.link }})</option>
+                                        {% endfor %}
+                                    {% endif %}
                                 </select>
                             </div>
+                            
                             <div class="mb-3">
-                                <label for="destination-select" class="form-label">Destination</label>
+                                <label for="destination-select" class="form-label">Destination Channel/Group</label>
                                 <select class="form-select" id="destination-select" required>
-                                    <option value="" selected disabled>Select a destination channel/group</option>
-                                    <!-- Destinations will be populated by JavaScript -->
+                                    <option value="" selected disabled>Select a destination</option>
+                                    {% if user_data and user_data.destinations %}
+                                        {% for id, destination in user_data.destinations.items() %}
+                                            <option value="{{ id }}">{{ destination.title }} ({{ destination.link }})</option>
+                                        {% endfor %}
+                                    {% endif %}
                                 </select>
                             </div>
+                            
                             <div class="mb-3">
                                 <label for="last-message-link" class="form-label">Last Message Link (Optional)</label>
                                 <input type="text" class="form-control" id="last-message-link" placeholder="https://t.me/c/123456789/100">
-                                <div class="form-text">If provided, forwarding will start after this message. Otherwise, all messages will be forwarded.</div>
+                                <div class="form-text">If provided, messages will be forwarded from the beginning up to this message.</div>
                             </div>
-                            <button type="submit" id="start-forwarding" class="btn btn-primary">Start Forwarding</button>
+                            
+                            <button type="submit" class="btn btn-primary">Start Forwarding</button>
                         </form>
                     </div>
                 </div>
             </div>
             
-            <div class="col-lg-4">
+            <div class="col-md-4">
+                <!-- Add Source Card -->
                 <div class="card">
                     <div class="card-header">
-                        <h5>Add Source</h5>
+                        <h5 class="m-0">Add Source</h5>
                     </div>
                     <div class="card-body">
                         <form id="add-source-form">
                             <div class="mb-3">
-                                <label for="source-link" class="form-label">Source Channel/Group Link</label>
-                                <input type="text" class="form-control" id="source-link" placeholder="https://t.me/channel" required>
-                                <div class="form-text">Enter the link to the Telegram channel or group you want to forward from.</div>
+                                <label for="source-link" class="form-label">Channel/Group Link</label>
+                                <input type="text" class="form-control" id="source-link" placeholder="https://t.me/channel_name" required>
+                                <div class="form-text">Can be a public channel username or a private invite link.</div>
                             </div>
                             <button type="submit" class="btn btn-primary">Add Source</button>
                         </form>
                     </div>
                 </div>
                 
+                <!-- Add Destination Card -->
                 <div class="card">
                     <div class="card-header">
-                        <h5>Add Destination</h5>
+                        <h5 class="m-0">Add Destination</h5>
                     </div>
                     <div class="card-body">
                         <form id="add-destination-form">
                             <div class="mb-3">
-                                <label for="destination-link" class="form-label">Destination Channel/Group Link</label>
-                                <input type="text" class="form-control" id="destination-link" placeholder="https://t.me/channel" required>
-                                <div class="form-text">Enter the link to the Telegram channel or group you want to forward to. You must be an admin in this channel/group.</div>
+                                <label for="destination-link" class="form-label">Channel/Group Link</label>
+                                <input type="text" class="form-control" id="destination-link" placeholder="https://t.me/channel_name" required>
+                                <div class="form-text">Must be a channel/group where you have admin rights.</div>
                             </div>
                             <button type="submit" class="btn btn-primary">Add Destination</button>
                         </form>
                     </div>
                 </div>
                 
+                <!-- Sources List -->
                 <div class="card">
                     <div class="card-header">
-                        <h5>Sources</h5>
+                        <h5 class="m-0">Your Sources</h5>
                     </div>
                     <div class="card-body">
                         <ul class="list-group" id="sources-list">
-                            <li class="list-group-item text-center">No sources added yet</li>
+                            {% if user_data and user_data.sources %}
+                                {% for id, source in user_data.sources.items() %}
+                                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                                        {{ source.title }}
+                                        <button class="btn btn-sm btn-danger delete-source" data-source-id="{{ id }}">Delete</button>
+                                    </li>
+                                {% endfor %}
+                            {% else %}
+                                <li class="list-group-item">No sources added yet</li>
+                            {% endif %}
                         </ul>
                     </div>
                 </div>
                 
+                <!-- Destinations List -->
                 <div class="card">
                     <div class="card-header">
-                        <h5>Destinations</h5>
+                        <h5 class="m-0">Your Destinations</h5>
                     </div>
                     <div class="card-body">
                         <ul class="list-group" id="destinations-list">
-                            <li class="list-group-item text-center">No destinations added yet</li>
+                            {% if user_data and user_data.destinations %}
+                                {% for id, destination in user_data.destinations.items() %}
+                                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                                        {{ destination.title }}
+                                        <button class="btn btn-sm btn-danger delete-destination" data-destination-id="{{ id }}">Delete</button>
+                                    </li>
+                                {% endfor %}
+                            {% else %}
+                                <li class="list-group-item">No destinations added yet</li>
+                            {% endif %}
                         </ul>
                     </div>
                 </div>
@@ -238,184 +213,363 @@
         </div>
     </div>
     
+    <!-- Status Update Modals -->
+    <div class="modal fade" id="successModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Success</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <p id="success-message"></p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-primary" data-bs-dismiss="modal">OK</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="modal fade" id="errorModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Error</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <p id="error-message"></p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-primary" data-bs-dismiss="modal">OK</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js"></script>
     <script>
+        // Store phone number for API calls
+        const phone = "{{ phone }}";
+        
+        // Bootstrap modal instances
+        let successModal;
+        let errorModal;
+        
         document.addEventListener('DOMContentLoaded', function() {
-            // Load initial status
-            loadForwardingStatus();
+            // Initialize Bootstrap modals
+            successModal = new bootstrap.Modal(document.getElementById('successModal'));
+            errorModal = new bootstrap.Modal(document.getElementById('errorModal'));
             
-            // Set up event listeners
-            document.getElementById('refresh-status').addEventListener('click', loadForwardingStatus);
-            document.getElementById('forwarding-form').addEventListener('submit', startForwarding);
+            // Add event listeners
             document.getElementById('add-source-form').addEventListener('submit', addSource);
             document.getElementById('add-destination-form').addEventListener('submit', addDestination);
-            document.getElementById('cancel-forwarding').addEventListener('click', cancelForwarding);
+            document.getElementById('forwarding-form').addEventListener('submit', startForwarding);
+            document.getElementById('cancel-btn').addEventListener('click', cancelForwarding);
             
-            // Set up polling for status updates (every 5 seconds)
-            setInterval(loadForwardingStatus, 5000);
+            // Add event listeners for delete buttons
+            document.querySelectorAll('.delete-source').forEach(button => {
+                button.addEventListener('click', function() {
+                    deleteSource(this.getAttribute('data-source-id'));
+                });
+            });
+            
+            document.querySelectorAll('.delete-destination').forEach(button => {
+                button.addEventListener('click', function() {
+                    deleteDestination(this.getAttribute('data-destination-id'));
+                });
+            });
+            
+            // Start status polling
+            checkForwardingStatus();
+            setInterval(checkForwardingStatus, 5000);
         });
         
-        function loadForwardingStatus() {
-            fetch('/status')
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
-                        updateStatusDisplay(data.status);
-                    } else {
-                        console.error('Error loading status:', data.error);
-                    }
-                })
-                .catch(error => {
-                    console.error('Error fetching status:', error);
-                });
+        function showSuccess(message) {
+            document.getElementById('success-message').textContent = message;
+            successModal.show();
         }
         
-        function updateStatusDisplay(status) {
-            document.getElementById('status-loading').style.display = 'none';
-            document.getElementById('status-content').style.display = 'block';
-            
-            // Update progress
-            const progressPercent = status.total_messages > 0 ? Math.round((status.forwarded_messages / status.total_messages) * 100) : 0;
-            document.getElementById('progress-bar').style.width = `${progressPercent}%`;
-            document.getElementById('progress-percent').textContent = `${progressPercent}%`;
-            document.getElementById('progress-text').textContent = `${status.forwarded_messages}/${status.total_messages}`;
-            
-            // Update counters
-            document.getElementById('source-name').textContent = status.source || '-';
-            document.getElementById('destination-name').textContent = status.destination || '-';
-            document.getElementById('status-text').textContent = status.active ? 'Active' : 'Inactive';
-            document.getElementById('forwarded-count').textContent = status.forwarded_messages;
-            document.getElementById('duplicate-count').textContent = status.duplicate_messages;
-            document.getElementById('skipped-count').textContent = status.skipped_messages;
-            
-            // Show/hide cancel button
-            document.getElementById('cancel-forwarding').style.display = status.active ? 'block' : 'none';
+        function showError(message) {
+            document.getElementById('error-message').textContent = message;
+            errorModal.show();
         }
         
-        function startForwarding(event) {
-            event.preventDefault();
+        function addSource(e) {
+            e.preventDefault();
+            
+            const sourceLink = document.getElementById('source-link').value;
+            
+            fetch('/add_source', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                body: `phone=${encodeURIComponent(phone)}&source_link=${encodeURIComponent(sourceLink)}`
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    showSuccess('Source added successfully!');
+                    document.getElementById('source-link').value = '';
+                    
+                    // Refresh the page to see the new source
+                    setTimeout(() => location.reload(), 1500);
+                } else {
+                    showError(data.error || 'Failed to add source');
+                }
+            })
+            .catch(error => {
+                showError('Error: ' + error.message);
+            });
+        }
+        
+        function addDestination(e) {
+            e.preventDefault();
+            
+            const destinationLink = document.getElementById('destination-link').value;
+            
+            fetch('/add_destination', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                body: `phone=${encodeURIComponent(phone)}&destination_link=${encodeURIComponent(destinationLink)}`
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    showSuccess('Destination added successfully!');
+                    document.getElementById('destination-link').value = '';
+                    
+                    // Refresh the page to see the new destination
+                    setTimeout(() => location.reload(), 1500);
+                } else {
+                    showError(data.error || 'Failed to add destination');
+                }
+            })
+            .catch(error => {
+                showError('Error: ' + error.message);
+            });
+        }
+        
+        function deleteSource(sourceId) {
+            if (!confirm('Are you sure you want to delete this source?')) {
+                return;
+            }
+            
+            fetch('/delete_source', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                body: `phone=${encodeURIComponent(phone)}&source_id=${encodeURIComponent(sourceId)}`
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    showSuccess('Source deleted successfully!');
+                    
+                    // Refresh the page to update the list
+                    setTimeout(() => location.reload(), 1500);
+                } else {
+                    showError(data.error || 'Failed to delete source');
+                }
+            })
+            .catch(error => {
+                showError('Error: ' + error.message);
+            });
+        }
+        
+        function deleteDestination(destinationId) {
+            if (!confirm('Are you sure you want to delete this destination?')) {
+                return;
+            }
+            
+            fetch('/delete_destination', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                body: `phone=${encodeURIComponent(phone)}&destination_id=${encodeURIComponent(destinationId)}`
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    showSuccess('Destination deleted successfully!');
+                    
+                    // Refresh the page to update the list
+                    setTimeout(() => location.reload(), 1500);
+                } else {
+                    showError(data.error || 'Failed to delete destination');
+                }
+            })
+            .catch(error => {
+                showError('Error: ' + error.message);
+            });
+        }
+        
+        function startForwarding(e) {
+            e.preventDefault();
             
             const sourceId = document.getElementById('source-select').value;
             const destinationId = document.getElementById('destination-select').value;
             const lastMessageLink = document.getElementById('last-message-link').value;
             
-            if (!sourceId || !destinationId) {
-                alert('Please select both source and destination');
-                return;
-            }
-            
-            const formData = new FormData();
-            formData.append('source_id', sourceId);
-            formData.append('destination_id', destinationId);
+            // First, set the last message link if provided
             if (lastMessageLink) {
-                formData.append('last_message_link', lastMessageLink);
+                fetch('/set_last_message', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                    },
+                    body: `phone=${encodeURIComponent(phone)}&source_id=${encodeURIComponent(sourceId)}&last_message_link=${encodeURIComponent(lastMessageLink)}`
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        // Now start forwarding
+                        startForwardingProcess(sourceId, destinationId);
+                    } else {
+                        showError(data.error || 'Failed to set last message');
+                    }
+                })
+                .catch(error => {
+                    showError('Error: ' + error.message);
+                });
+            } else {
+                // Start forwarding directly
+                startForwardingProcess(sourceId, destinationId);
             }
-            
+        }
+        
+        function startForwardingProcess(sourceId, destinationId) {
             fetch('/start_forwarding', {
                 method: 'POST',
-                body: formData
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                body: `phone=${encodeURIComponent(phone)}&source_id=${encodeURIComponent(sourceId)}&destination_id=${encodeURIComponent(destinationId)}`
             })
             .then(response => response.json())
             .then(data => {
                 if (data.success) {
-                    alert('Forwarding started successfully');
-                    loadForwardingStatus();
+                    showSuccess('Forwarding started successfully!');
+                    document.getElementById('cancel-btn').style.display = 'block';
+                    checkForwardingStatus(); // Update status immediately
                 } else {
-                    alert('Error: ' + data.error);
+                    showError(data.error || 'Failed to start forwarding');
                 }
             })
             .catch(error => {
-                console.error('Error starting forwarding:', error);
-                alert('Error starting forwarding');
-            });
-        }
-        
-        function addSource(event) {
-            event.preventDefault();
-            
-            const sourceLink = document.getElementById('source-link').value;
-            
-            if (!sourceLink) {
-                alert('Please enter a valid source link');
-                return;
-            }
-            
-            const formData = new FormData();
-            formData.append('source_link', sourceLink);
-            
-            fetch('/add_source', {
-                method: 'POST',
-                body: formData
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    alert('Source added successfully');
-                    document.getElementById('source-link').value = '';
-                    // You would typically refresh the sources list here
-                } else {
-                    alert('Error: ' + data.error);
-                }
-            })
-            .catch(error => {
-                console.error('Error adding source:', error);
-                alert('Error adding source');
-            });
-        }
-        
-        function addDestination(event) {
-            event.preventDefault();
-            
-            const destinationLink = document.getElementById('destination-link').value;
-            
-            if (!destinationLink) {
-                alert('Please enter a valid destination link');
-                return;
-            }
-            
-            const formData = new FormData();
-            formData.append('destination_link', destinationLink);
-            
-            fetch('/add_destination', {
-                method: 'POST',
-                body: formData
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    alert('Destination added successfully');
-                    document.getElementById('destination-link').value = '';
-                    // You would typically refresh the destinations list here
-                } else {
-                    alert('Error: ' + data.error);
-                }
-            })
-            .catch(error => {
-                console.error('Error adding destination:', error);
-                alert('Error adding destination');
+                showError('Error: ' + error.message);
             });
         }
         
         function cancelForwarding() {
-            if (!confirm('Are you sure you want to cancel the forwarding process?')) {
+            if (!confirm('Are you sure you want to cancel the current forwarding task?')) {
                 return;
             }
             
             fetch('/cancel_forwarding', {
-                method: 'POST'
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                body: `phone=${encodeURIComponent(phone)}`
             })
             .then(response => response.json())
             .then(data => {
                 if (data.success) {
-                    alert('Forwarding cancelled successfully');
-                    loadForwardingStatus();
+                    showSuccess('Forwarding cancelled successfully!');
+                    document.getElementById('cancel-btn').style.display = 'none';
+                    checkForwardingStatus(); // Update status immediately
                 } else {
-                    alert('Error: ' + data.error);
+                    showError(data.error || 'Failed to cancel forwarding');
                 }
             })
             .catch(error => {
-                console.error('Error cancelling forwarding:', error);
-                alert('Error cancelling forwarding');
+                showError('Error: ' + error.message);
             });
+        }
+        
+        function checkForwardingStatus() {
+            fetch(`/get_forwarding_status?phone=${encodeURIComponent(phone)}`)
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    updateStatusDisplay(data.status);
+                }
+            })
+            .catch(error => {
+                console.error('Error checking forwarding status:', error);
+            });
+        }
+        
+        function updateStatusDisplay(status) {
+            const statusBadge = document.getElementById('status-badge');
+            const statusContent = document.getElementById('status-content');
+            const progressContainer = document.getElementById('progress-container');
+            const progressBar = document.getElementById('progress-bar');
+            const progressLabel = document.getElementById('progress-label');
+            const progressDetails = document.getElementById('progress-details');
+            const progressEta = document.getElementById('progress-eta');
+            const cancelBtn = document.getElementById('cancel-btn');
+            
+            if (status.active) {
+                // Update status badge
+                statusBadge.textContent = status.status.charAt(0).toUpperCase() + status.status.slice(1);
+                statusBadge.className = 'badge status-badge bg-success';
+                
+                // Show progress bar
+                progressContainer.style.display = 'block';
+                progressBar.style.width = `${status.progress}%`;
+                progressLabel.textContent = `${Math.round(status.progress)}%`;
+                
+                // Update progress details
+                progressDetails.textContent = `${status.forwarded_messages}/${status.total_messages} messages`;
+                
+                // Calculate and update ETA
+                const messagesRemaining = status.total_messages - status.forwarded_messages;
+                const etaMinutes = Math.ceil((messagesRemaining * 3) / 60); // 3 seconds per message
+                progressEta.textContent = `ETA: ${etaMinutes} minute${etaMinutes !== 1 ? 's' : ''}`;
+                
+                // Show cancel button
+                cancelBtn.style.display = 'block';
+                
+                // Update status content
+                const sourceName = document.querySelector(`#source-select option[value="${status.source_id}"]`)?.textContent || 'Unknown source';
+                const destinationName = document.querySelector(`#destination-select option[value="${status.destination_id}"]`)?.textContent || 'Unknown destination';
+                
+                statusContent.innerHTML = `
+                    <p><strong>From:</strong> ${sourceName}</p>
+                    <p><strong>To:</strong> ${destinationName}</p>
+                `;
+            } else {
+                // Update status badge
+                statusBadge.textContent = status.status.charAt(0).toUpperCase() + status.status.slice(1);
+                statusBadge.className = 'badge status-badge bg-secondary';
+                
+                // Hide progress bar
+                progressContainer.style.display = 'none';
+                
+                // Hide cancel button if not running
+                if (status.status !== 'running') {
+                    cancelBtn.style.display = 'none';
+                }
+                
+                // Update status content
+                if (status.status === 'completed') {
+                    statusContent.innerHTML = `<p>Last forwarding task completed successfully.</p>`;
+                } else if (status.status === 'cancelled') {
+                    statusContent.innerHTML = `<p>Last forwarding task was cancelled.</p>`;
+                } else if (status.status === 'failed') {
+                    statusContent.innerHTML = `<p>Last forwarding task failed: ${status.error || 'Unknown error'}</p>`;
+                } else {
+                    statusContent.innerHTML = `<p>No active forwarding task.</p>`;
+                }
+            }
         }
     </script>
 </body>

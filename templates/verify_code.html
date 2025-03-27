@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login - Telegram Message Forwarder</title>
+    <title>Verify Code - Telegram Message Forwarder</title>
     <link rel="stylesheet" href="https://cdn.replit.com/agent/bootstrap-agent-dark-theme.min.css">
     <style>
         body {
@@ -18,12 +18,6 @@
         }
         .alert {
             margin-bottom: 1rem;
-        }
-        .form-note {
-            margin-top: 1.5rem;
-            padding: 1rem;
-            background-color: rgba(0, 0, 0, 0.05);
-            border-radius: 0.25rem;
         }
     </style>
 </head>
@@ -47,7 +41,7 @@
                     <path fill="#a9c9dd" d="M98 175c3 0 4.325-1.372 6-3l16-15.558-19.958-12.035"/>
                     <path fill="url(#b)" d="M100.04 144.41l48.36 35.729c5.519 3.045 9.501 1.468 10.876-5.123l19.685-92.763c2.015-8.08-3.08-11.746-8.36-9.349l-115.59 44.571c-7.89 3.165-7.843 7.567-1.438 9.528l29.663 9.259 68.673-43.325c3.242-1.966 6.218-.91 3.776 1.258"/>
                 </svg>
-                <h1>Login with Telegram</h1>
+                <h1>Verify Telegram Code</h1>
                 
                 {% with messages = get_flashed_messages() %}
                   {% if messages %}
@@ -65,46 +59,22 @@
             <div class="col-md-6">
                 <div class="card">
                     <div class="card-body">
-                        <p class="card-text text-center">Enter your Telegram API credentials to use the message forwarder</p>
+                        <p class="card-text text-center">A verification code has been sent to your Telegram app. Please enter it below:</p>
                         
-                        <form action="/dashboard" method="GET">
-                            <div class="mb-3">
-                                <label for="phone" class="form-label">Phone Number</label>
-                                <input type="text" class="form-control" id="phone" name="phone" placeholder="+1234567890" required>
-                                <div class="form-text">Enter your phone number with country code (e.g., +1234567890)</div>
-                            </div>
+                        <form action="/submit_code" method="POST">
+                            <input type="hidden" name="phone" value="{{ phone }}">
                             
                             <div class="mb-3">
-                                <label for="api_id" class="form-label">API ID</label>
-                                <input type="text" class="form-control" id="api_id" name="api_id" required>
-                                <div class="form-text">Enter your Telegram API ID</div>
-                            </div>
-                            
-                            <div class="mb-3">
-                                <label for="api_hash" class="form-label">API Hash</label>
-                                <input type="text" class="form-control" id="api_hash" name="api_hash" required>
-                                <div class="form-text">Enter your Telegram API Hash</div>
+                                <label for="code" class="form-label">Verification Code</label>
+                                <input type="text" class="form-control" id="code" name="code" placeholder="12345" required>
+                                <div class="form-text">Enter the 5-digit code you received in your Telegram app</div>
                             </div>
                             
                             <div class="d-grid gap-2">
-                                <button type="submit" class="btn btn-primary">Login</button>
-                                <a href="/" class="btn btn-outline-secondary">Back to Home</a>
+                                <button type="submit" class="btn btn-primary">Verify</button>
+                                <a href="/login" class="btn btn-outline-secondary">Cancel</a>
                             </div>
                         </form>
-                        
-                        <div class="form-note mt-3">
-                            <h6>How to get API credentials:</h6>
-                            <ol>
-                                <li>Go to <a href="https://my.telegram.org/auth" target="_blank">my.telegram.org</a></li>
-                                <li>Login with your phone number</li>
-                                <li>Click on "API Development Tools"</li>
-                                <li>Fill in the required fields (you can put any name)</li>
-                                <li>Copy the API ID and API Hash values</li>
-                            </ol>
-                            <div class="alert alert-warning" role="alert">
-                                <strong>Important:</strong> Never share your API credentials with others!
-                            </div>
-                        </div>
                     </div>
                 </div>
             </div>
